@@ -1,0 +1,52 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+        env:
+          # Baked into the browser bundle at build time.
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://bongomaker.com/ecom-back' }}
+
+      - name: Assemble standalone bundle
+        run: |
+          cp -r public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+
+      - name: Prepare SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      # The standalone folder bundles its own node_modules, so no "Run NPM Install" needed.
+      - name: Upload build
+        run: |
+          rsync -az --delete \
+            --exclude tmp --exclude '.htaccess' --exclude '.env' \
+            -e "ssh -i ~/.ssh/id_deploy -p ${{ secrets.SSH_PORT || 22 }}" \
+            .next/standalone/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_PATH }}/"
+
+      - name: Restart app
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "${{ secrets.SSH_PORT || 22 }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "mkdir -p ${{ secrets.APP_PATH }}/tmp && touch ${{ secrets.APP_PATH }}/tmp/restart.txt"
