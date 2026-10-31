@@ -37,13 +37,13 @@ jobs:
           ssh-keyscan -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
       # The standalone folder bundles its own node_modules, so no "Run NPM Install" needed.
+      # The host has no rsync, so stream a tarball over SSH. Old build files are
+      # removed first; tmp/ and .htaccess (managed by cPanel) are left alone.
       - name: Upload build
         run: |
-          rsync -az --delete \
-            --exclude tmp --exclude '.htaccess' --exclude '.env' \
-            -e "ssh -i ~/.ssh/id_deploy -p ${{ secrets.SSH_PORT || 22 }}" \
-            .next/standalone/ \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_PATH }}/"
+          tar -C .next/standalone -czf - . | ssh -i ~/.ssh/id_deploy -p "${{ secrets.SSH_PORT || 22 }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "mkdir -p ${{ secrets.APP_PATH }} && cd ${{ secrets.APP_PATH }} && rm -rf .next node_modules public server.js package.json && tar -xzf -"
 
       - name: Restart app
         run: |
