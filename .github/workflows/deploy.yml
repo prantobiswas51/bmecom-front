@@ -70,12 +70,29 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
+          case "$SSH_HOST" in
+            *@*|*://*|*" "*|*/*) echo "::error::SSH_HOST must be just the server address (an IP or domain), with no user@, protocol or spaces. The user goes in SSH_USER."; exit 1 ;;
+          esac
+
+          # With SSH_KNOWN_HOSTS the server's key must match it. Without, the key is remembered on
+          # first sight (ssh itself does this, so it copes with new servers where ssh-keyscan may not).
           if [ -n "$KNOWN_HOSTS" ]; then
             printf '%s\n' "$KNOWN_HOSTS" >> ~/.ssh/known_hosts
+            strict=yes
           else
-            # Trusts the host on first sight. Set the SSH_KNOWN_HOSTS secret to pin it.
-            ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+            strict=accept-new
           fi
+          printf 'Host *\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n  StrictHostKeyChecking %s\n  ConnectTimeout 15\n  ServerAliveInterval 15\n' "$strict" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+          # Fail here, with the real reason, instead of halfway through the upload.
+          if ! out=$(ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'echo connected' 2>&1); then
+            echo "::error::Could not log in to the server over SSH."
+            echo "ssh said: $out"
+            echo "Check: the SSH_USER and SSH_PORT secrets; that the public half of SSH_PRIVATE_KEY is in that user's ~/.ssh/authorized_keys; and that the VPS firewall or provider security group allows inbound SSH from the internet (GitHub runner IPs change, so it cannot be limited to one address)."
+            exit 1
+          fi
+          echo "$out"
 
       # Each deploy gets its own folder under releases/, so a bad build never overwrites the live one.
       - name: Upload release

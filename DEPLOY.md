@@ -18,7 +18,7 @@ Secrets:
 - `SSH_HOST`, `SSH_USER`, `APP_PATH` (for example `/var/www/bmcom-front`)
 - `SSH_PRIVATE_KEY`: a key made only for deploys, with its public half in the server user's `~/.ssh/authorized_keys`
 - `SSH_PORT` (optional, default 22)
-- `SSH_KNOWN_HOSTS` (optional but better): output of `ssh-keyscan -p 22 your-host`. Without it the first connection is trusted blindly.
+- `SSH_KNOWN_HOSTS` (optional but better): pins the server's key. Get it with `ssh-keyscan -t ed25519 your-host` run on the VPS itself or a machine with a recent OpenSSH (older Windows builds fail with "unsupported KEX method"). Without it the key is remembered on first connection.
 
 Variables:
 
