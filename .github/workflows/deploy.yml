@@ -31,7 +31,7 @@ jobs:
 
       - name: Check deploy settings
         env:
-          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
           KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           missing=0
@@ -40,7 +40,7 @@ jobs:
           done
           [ -n "$KEY" ] || { echo "::error::Missing secret SSH_PRIVATE_KEY"; missing=1; }
           # Baked into the browser bundle, so a wrong value is silent breakage; refuse to guess.
-          [ -n "$API_URL" ] || { echo "::error::Missing repository variable NEXT_PUBLIC_API_URL (e.g. https://yourdomain.com/api)"; missing=1; }
+          [ -n "$API_URL" ] || { echo "::error::Missing NEXT_PUBLIC_API_URL (set it as a variable or a secret, e.g. https://yourdomain.com/api)"; missing=1; }
           exit $missing
 
       - uses: actions/setup-node@v4
@@ -52,8 +52,8 @@ jobs:
       - run: npm run build
         env:
           # Both are baked into the browser bundle at build time.
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_GTM_ID: ${{ vars.NEXT_PUBLIC_GTM_ID }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GTM_ID: ${{ vars.NEXT_PUBLIC_GTM_ID || secrets.NEXT_PUBLIC_GTM_ID }}
 
       - name: Assemble standalone bundle
         run: |
