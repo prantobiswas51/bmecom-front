@@ -1,9 +1,18 @@
 name: CI
 
+# Checks pull requests and feature branches. Pushes to main are checked by the
+# Deploy workflow, which runs the same lint and build before it ships.
 on:
   push:
-    branches: [main, master]
+    branches-ignore: [main, master]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:

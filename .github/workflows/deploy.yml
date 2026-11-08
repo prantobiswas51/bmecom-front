@@ -1,17 +1,48 @@
-name: Deploy to cPanel
+name: Deploy to VPS
 
 on:
   push:
     branches: [main, master]
   workflow_dispatch:
 
-concurrency: deploy
+# One deploy at a time; a newer push waits instead of cutting a running deploy short.
+concurrency:
+  group: deploy-front
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Lets the job read secrets and variables stored in the "bmfront-prod" GitHub Environment
+    # (Settings > Environments). Repository-level ones work too; GitHub creates the environment if it is missing.
+    environment: bmfront-prod
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+      APP_PATH: ${{ secrets.APP_PATH }}
+      FRONT_PORT: ${{ vars.FRONT_PORT || 3583 }}
+      PM2_APP_NAME: ${{ vars.PM2_APP_NAME || 'bmfront-prod' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check deploy settings
+        env:
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          missing=0
+          for name in SSH_HOST SSH_USER APP_PATH; do
+            [ -n "${!name}" ] || { echo "::error::Missing secret $name"; missing=1; }
+          done
+          [ -n "$KEY" ] || { echo "::error::Missing secret SSH_PRIVATE_KEY"; missing=1; }
+          # Baked into the browser bundle, so a wrong value is silent breakage; refuse to guess.
+          [ -n "$API_URL" ] || { echo "::error::Missing repository variable NEXT_PUBLIC_API_URL (e.g. https://yourdomain.com/api)"; missing=1; }
+          exit $missing
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -20,33 +51,76 @@ jobs:
       - run: npm run lint
       - run: npm run build
         env:
-          # Baked into the browser bundle at build time.
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://bongomaker.com/ecom-back' }}
+          # Both are baked into the browser bundle at build time.
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GTM_ID: ${{ vars.NEXT_PUBLIC_GTM_ID }}
 
       - name: Assemble standalone bundle
         run: |
           cp -r public .next/standalone/public
           mkdir -p .next/standalone/.next
           cp -r .next/static .next/standalone/.next/static
+          cp ecosystem.config.cjs .next/standalone/ecosystem.config.cjs
 
       - name: Prepare SSH
+        env:
+          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          printf '%s\n' "$KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -p "${{ secrets.SSH_PORT || 22 }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            # Trusts the host on first sight. Set the SSH_KNOWN_HOSTS secret to pin it.
+            ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
 
-      # The standalone folder bundles its own node_modules, so no "Run NPM Install" needed.
-      # The host has no rsync, so stream a tarball over SSH. Old build files are
-      # removed first; tmp/ and .htaccess (managed by cPanel) are left alone.
-      - name: Upload build
+      # Each deploy gets its own folder under releases/, so a bad build never overwrites the live one.
+      - name: Upload release
         run: |
-          tar -C .next/standalone -czf - . | ssh -i ~/.ssh/id_deploy -p "${{ secrets.SSH_PORT || 22 }}" \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "mkdir -p ${{ secrets.APP_PATH }} && cd ${{ secrets.APP_PATH }} && rm -rf .next node_modules public server.js package.json && tar -xzf -"
+          tar -C .next/standalone -czf - . | ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "mkdir -p $(printf '%q' "$APP_PATH/releases/$GITHUB_SHA") && tar -xzf - -C $(printf '%q' "$APP_PATH/releases/$GITHUB_SHA")"
 
-      - name: Restart app
+      - name: Switch to the new release
         run: |
-          ssh -i ~/.ssh/id_deploy -p "${{ secrets.SSH_PORT || 22 }}" \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "mkdir -p ${{ secrets.APP_PATH }}/tmp && touch ${{ secrets.APP_PATH }}/tmp/restart.txt"
+          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "bash -s -- $(printf '%q ' "$APP_PATH" "$GITHUB_SHA" "$FRONT_PORT" "$PM2_APP_NAME")" <<'REMOTE'
+          set -euo pipefail
+          app_path=$1; release=$2; port=$3; name=$4
+          cd "$app_path"
+          mkdir -p shared releases
+          touch shared/.env
+
+          previous=$(readlink current 2>/dev/null || true)
+          ln -sfn "releases/$release" current.next
+          mv -Tf current.next current
+
+          start() {
+            APP_CURRENT="$app_path/current" APP_SHARED="$app_path/shared" FRONT_PORT="$port" PM2_APP_NAME="$name" \
+              pm2 startOrReload "$app_path/current/ecosystem.config.cjs" --update-env
+          }
+          start
+
+          # Wait for the app to answer before calling the deploy good.
+          for _ in $(seq 1 30); do
+            if curl -fsS -o /dev/null "http://127.0.0.1:$port/"; then
+              pm2 save
+              ls -1dt releases/*/ | tail -n +4 | xargs -r rm -rf   # keep the 3 newest releases
+              echo "Deployed $release"
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "The new release did not answer on port $port within 30s." >&2
+          pm2 logs "$name" --lines 30 --nostream || true
+          if [ -n "$previous" ]; then
+            echo "Rolling back to $previous" >&2
+            ln -sfn "$previous" current.next
+            mv -Tf current.next current
+            start
+          fi
+          exit 1
+          REMOTE
