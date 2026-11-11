@@ -1,6 +1,8 @@
 // Server-side client for the NestJS backend. Import this from server code only
 // (server actions, route handlers, server components, proxy).
 
+import { headers } from "next/headers";
+
 export const API_URL = (
   process.env.API_URL ??
   process.env.NEXT_PUBLIC_API_URL ??
@@ -38,14 +40,31 @@ function errorMessage(status: number, body: unknown): string {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/**
+ * Passes the visitor's address to the backend so its rate limit counts each visitor separately.
+ * Only used by mutations (server actions), which always run inside a request; reading headers in
+ * GET helpers would make cached pages dynamic. nginx appends the real address last.
+ */
+async function visitorIpHeader(): Promise<Record<string, string>> {
+  try {
+    const forwarded = (await headers()).get("x-forwarded-for");
+    const ip = forwarded?.split(",").pop()?.trim();
+    return ip ? { "X-Forwarded-For": ip } : {};
+  } catch {
+    return {};
+  }
+}
+
 export async function api<T = null>(
   path: string,
   options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown; token?: string } = {},
 ): Promise<ApiResult<T>> {
+  const method = options.method ?? "POST";
   try {
     const res = await fetch(`${API_URL}${path}`, {
-      method: options.method ?? "POST",
+      method,
       headers: {
+        ...(method !== "GET" && (await visitorIpHeader())),
         ...(options.body !== undefined && { "Content-Type": "application/json" }),
         ...(options.token && { Authorization: `Bearer ${options.token}` }),
       },

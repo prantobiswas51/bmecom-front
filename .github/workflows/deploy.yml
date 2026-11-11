@@ -104,6 +104,9 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "bash -s -- $(printf '%q ' "$APP_PATH" "$GITHUB_SHA" "$FRONT_PORT" "$PM2_APP_NAME")" <<'REMOTE'
+          # A non-interactive SSH shell does not load nvm, so node and pm2 may be missing from PATH.
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || true
           set -euo pipefail
           app_path=$1; release=$2; port=$3; name=$4
           cd "$app_path"
@@ -113,6 +116,13 @@ jobs:
           previous=$(readlink current 2>/dev/null || true)
           ln -sfn "releases/$release" current.next
           mv -Tf current.next current
+
+          # A process that was started by hand from another folder would keep running that old code on
+          # reload, so it is replaced once by one that runs from "current".
+          if pm2 describe "$name" > /dev/null 2>&1 && ! pm2 jlist 2>/dev/null | tr -d ' \n' | grep -q "\"pm_cwd\":\"$app_path/current\""; then
+            echo "Replacing the existing $name process with one that runs from $app_path/current"
+            pm2 delete "$name"
+          fi
 
           start() {
             APP_CURRENT="$app_path/current" APP_SHARED="$app_path/shared" FRONT_PORT="$port" PM2_APP_NAME="$name" \
