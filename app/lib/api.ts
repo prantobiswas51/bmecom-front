@@ -3,11 +3,9 @@
 
 import { headers } from "next/headers";
 
-export const API_URL = (
-  process.env.API_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:3034"
-).replace(/\/$/, "");
+import { API_URL } from "./api-url";
+
+export { API_URL };
 
 export type ApiResult<T> =
   | { ok: true; status: number; data: T }

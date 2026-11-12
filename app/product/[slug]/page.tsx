@@ -97,7 +97,11 @@ async function Product({ params, searchParams }: { params: Params; searchParams:
         <section className="mt-14 max-w-3xl">
           <h2 className="text-[1.375rem] font-bold text-brand sm:text-2xl">Description</h2>
           <div className="mt-1.5 h-1 w-20 rounded-full bg-accent" />
-          <p className="mt-5 whitespace-pre-line leading-relaxed text-ink">{product.description}</p>
+          {/* The backend strips the HTML down to a safe set of tags when the product is saved. */}
+          <div
+            className={`product-description mt-5 leading-relaxed text-ink ${/<\/?[a-z][\s\S]*>/i.test(product.description) ? "" : "whitespace-pre-line"}`}
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
         </section>
       )}
 

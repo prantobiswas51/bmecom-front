@@ -1,6 +1,6 @@
 // Public product catalog from the NestJS backend. Server-side only.
 import { cache } from "react";
-import { API_URL } from "./api";
+import { API_URL } from "./api-url";
 
 export type CatalogCard = {
   id: string;
