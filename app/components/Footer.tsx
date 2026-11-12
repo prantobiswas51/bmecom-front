@@ -32,9 +32,9 @@ export function Footer() {
             Art supplies, stationery and craft materials, delivered across Bangladesh.
           </p>
           <ul className="mt-5 space-y-2 text-sm text-white/80">
-            <li className="flex items-center gap-2"><Icon name="phone" width={16} height={16} /> +880 1XXX-XXXXXX</li>
-            <li className="flex items-center gap-2"><Icon name="mail" width={16} height={16} /> hello@example.com</li>
-            <li className="flex items-center gap-2"><Icon name="pin" width={16} height={16} /> Dhaka, Bangladesh</li>
+            <li className="flex items-center gap-2"><Icon name="whatsapp" width={16} height={16} aria-label="WhatsApp" role="img" /> 01761387787</li>
+            <li className="flex items-center gap-2"><Icon name="mail" width={16} height={16} /> support@bongomaker.com</li>
+            <li className="flex items-center gap-2"><Icon name="pin" width={16} height={16} /> Magura, Bangladesh</li>
           </ul>
         </div>
         {columns.map((col) => (
