@@ -93,7 +93,7 @@ async function SideProducts() {
   if (items.length === 0) return null;
   return (
     <>
-      <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8">
+      <ul className="mt-6 grid grid-cols-1 gap-y-8">
         {items.map((p, i) => (
           <li key={p.id}>
             <ShopCard p={p} list="Blog sidebar" index={i} />
