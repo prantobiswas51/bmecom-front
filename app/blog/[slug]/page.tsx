@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { blogDate, fetchBlogPost } from "../../lib/blog";
-import { imageUrl } from "../../lib/catalog";
+import { fetchProducts, imageUrl } from "../../lib/catalog";
+import { ShopCard } from "../../shop/_components/ShopCard";
 
 type Params = Promise<{ slug: string }>;
 
@@ -38,7 +39,9 @@ async function Post({ params }: { params: Params }) {
   }
 
   return (
-    <article className="mx-auto max-w-3xl">
+    // 70% for the post, 30% for products; stacked on small screens.
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)]">
+    <article className="min-w-0">
       <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-muted">
         <Link href="/" className="hover:text-brand">
           Home
@@ -71,6 +74,36 @@ async function Post({ params }: { params: Params }) {
         </Link>
       </p>
     </article>
+
+    <aside aria-label="Products" className="lg:sticky lg:top-40">
+      <h2 className="text-lg font-bold text-brand">Shop our products</h2>
+      <div className="mt-1.5 h-1 w-16 rounded-full bg-accent" />
+      <Suspense fallback={<div className="mt-6 h-96" aria-hidden="true" />}>
+        <SideProducts />
+      </Suspense>
+    </aside>
+    </div>
+  );
+}
+
+/** The newest products, beside the post. Nothing is shown if the shop can't be reached. */
+async function SideProducts() {
+  const result = await fetchProducts({ sort: "newest" }, 4);
+  const items = result?.items ?? [];
+  if (items.length === 0) return null;
+  return (
+    <>
+      <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8">
+        {items.map((p, i) => (
+          <li key={p.id}>
+            <ShopCard p={p} list="Blog sidebar" index={i} />
+          </li>
+        ))}
+      </ul>
+      <Link href="/shop" className="mt-6 inline-block text-sm font-semibold text-brand hover:underline">
+        See all products →
+      </Link>
+    </>
   );
 }
 

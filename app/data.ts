@@ -16,6 +16,7 @@ export const tones: Record<Tone, { bg: string; fg: string }> = {
 export const navChips = [
   { label: "Shop", icon: "bag", href: "/shop" },
   { label: "New Arrival", icon: "spark", href: "/shop?sort=newest" },
+  { label: "Blog", icon: "paper", href: "/blog" },
 ] as const;
 
 export const slides = [
