@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { blogDate, fetchBlogPost } from "../../lib/blog";
 import { fetchProducts, imageUrl } from "../../lib/catalog";
-import { ShopCard } from "../../shop/_components/ShopCard";
+import { SideProduct } from "../_components/SideProduct";
 
 type Params = Promise<{ slug: string }>;
 
@@ -76,7 +76,7 @@ async function Post({ params }: { params: Params }) {
     </article>
 
     <aside aria-label="Products" className="lg:sticky lg:top-40">
-      <h2 className="text-lg font-bold text-brand">Shop our products</h2>
+      <h2 className="text-sm font-extrabold uppercase tracking-[0.08em] text-brand">Recent products</h2>
       <div className="mt-1.5 h-1 w-16 rounded-full bg-accent" />
       <Suspense fallback={<div className="mt-6 h-96" aria-hidden="true" />}>
         <SideProducts />
@@ -88,15 +88,15 @@ async function Post({ params }: { params: Params }) {
 
 /** The newest products, beside the post. Nothing is shown if the shop can't be reached. */
 async function SideProducts() {
-  const result = await fetchProducts({ sort: "newest" }, 4);
+  const result = await fetchProducts({ sort: "newest" }, 5);
   const items = result?.items ?? [];
   if (items.length === 0) return null;
   return (
     <>
-      <ul className="mt-6 grid grid-cols-1 gap-y-8">
+      <ul className="mt-6 space-y-5">
         {items.map((p, i) => (
           <li key={p.id}>
-            <ShopCard p={p} list="Blog sidebar" index={i} />
+            <SideProduct p={p} index={i} />
           </li>
         ))}
       </ul>
