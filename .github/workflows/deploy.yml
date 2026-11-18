@@ -51,9 +51,8 @@ jobs:
       - run: npm run lint
       - run: npm run build
         env:
-          # Both are baked into the browser bundle at build time.
+          # Baked into the browser bundle at build time. (GTM_ID is not here: the server reads it at runtime from its own .env.)
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_GTM_ID: ${{ vars.NEXT_PUBLIC_GTM_ID || secrets.NEXT_PUBLIC_GTM_ID }}
 
       - name: Assemble standalone bundle
         run: |

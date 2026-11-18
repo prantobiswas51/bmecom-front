@@ -1,50 +1,39 @@
-"use client";
-
-import { usePathname, useSearchParams } from "next/navigation";
+import { connection } from "next/server";
 import Script from "next/script";
-import { Suspense, useEffect } from "react";
-import { GTM_ID, track } from "../lib/gtm";
+import { Suspense } from "react";
+import { parseGtmId } from "../lib/gtm";
+import { PageViews } from "./PageViews";
 
-/** Query parameters that grant access to something and must never be sent to a third party. */
-const SECRET_PARAMS = ["key", "token"];
-
-/** Sends a page_view on every page and every client-side navigation. */
-function PageViews() {
-  const pathname = usePathname();
-  const search = useSearchParams().toString();
-
-  useEffect(() => {
-    // The page title is set a moment after the route changes, so wait for it.
-    const timer = setTimeout(() => {
-      // Order links carry the order's access key and email links carry one-time tokens: keep them out of analytics.
-      const url = new URL(window.location.href);
-      for (const secret of SECRET_PARAMS) url.searchParams.delete(secret);
-      track("page_view", {
-        page_path: url.pathname,
-        page_location: url.href,
-        page_title: document.title,
-      });
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [pathname, search]);
-
-  return null;
-}
-
-/** Loads the Google Tag Manager container named in NEXT_PUBLIC_GTM_ID. Renders nothing when there is none. */
-export function Analytics() {
-  if (!GTM_ID) return null;
+/**
+ * Loads the Google Tag Manager container named by GTM_ID in the server's environment. It is read for
+ * each request, not at build time, so the id lives only on the server and can be changed with a restart.
+ */
+async function Gtm() {
+  await connection(); // read the environment per request instead of freezing it into the build
+  const id = parseGtmId(process.env.GTM_ID);
   return (
     <>
-      <Script id="gtm" strategy="afterInteractive">
-        {`window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=document.getElementsByTagName('script')[0],j=document.createElement('script');j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=${GTM_ID}';f.parentNode.insertBefore(j,f);`}
-      </Script>
-      <noscript>
-        <iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} height="0" width="0" style={{ display: "none", visibility: "hidden" }} />
-      </noscript>
-      <Suspense fallback={null}>
-        <PageViews />
-      </Suspense>
+      {/* Tells the browser code whether tracking is on ("" means off). */}
+      <script dangerouslySetInnerHTML={{ __html: `window.__GTM_ID=${JSON.stringify(id)};` }} />
+      {id && (
+        <>
+          <Script id="gtm" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=document.getElementsByTagName('script')[0],j=document.createElement('script');j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id=${id}';f.parentNode.insertBefore(j,f);`}
+          </Script>
+          <noscript>
+            <iframe src={`https://www.googletagmanager.com/ns.html?id=${id}`} height="0" width="0" style={{ display: "none", visibility: "hidden" }} />
+          </noscript>
+          <PageViews />
+        </>
+      )}
     </>
+  );
+}
+
+export function Analytics() {
+  return (
+    <Suspense fallback={null}>
+      <Gtm />
+    </Suspense>
   );
 }

@@ -23,7 +23,7 @@ Secrets:
 Variables:
 
 - `NEXT_PUBLIC_API_URL` (required): the public URL of the backend, baked into the browser bundle. A secret of the same name also works.
-- `NEXT_PUBLIC_GTM_ID` (optional): your Google Tag Manager id; empty turns tracking off. Changing it needs a new deploy. A secret works too.
+- GTM is not set in GitHub. Put `GTM_ID=GTM-XXXXXXX` in the server's `shared/.env` (empty or missing turns tracking off) and restart the app with `pm2 restart bmfront-prod --update-env`; no new deploy is needed.
 - `FRONT_PORT` (optional, default 3583)
 - `PM2_APP_NAME` (optional, default `bmfront-prod`): the process name in pm2
 
