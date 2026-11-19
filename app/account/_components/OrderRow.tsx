@@ -26,7 +26,7 @@ export function OrderRow({ order }: { order: OrderSummary }) {
           </p>
         </div>
         <StatusBadge status={order.status} />
-        <p className="w-24 text-right font-extrabold text-brand">
+        <p className="ml-auto min-w-24 whitespace-nowrap text-right font-extrabold text-brand">
           <Price value={order.total} />
         </p>
       </Link>

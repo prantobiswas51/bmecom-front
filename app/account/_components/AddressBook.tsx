@@ -58,7 +58,7 @@ function AddressCard({ address }: { address: Address }) {
     );
   }
   return (
-    <li className={`${panel} flex flex-col`}>
+    <li className={`${panel} flex min-w-0 flex-col break-words`}>
       <div className="flex items-start justify-between gap-3">
         <p className="font-bold text-brand">{address.label || "Address"}</p>
         {address.isDefault && <span className="rounded-full bg-success-soft px-2.5 py-0.5 text-xs font-bold text-success">Default</span>}

@@ -41,11 +41,11 @@ async function Order({ params }: { params: Params }) {
       </div>
 
       {step >= 0 && (
-        <ol className={`${panel} grid grid-cols-5 gap-2`} aria-label="Order progress">
+        <ol className={`${panel} grid grid-cols-5 gap-1.5 sm:gap-2`} aria-label="Order progress">
           {STEPS.map((s, i) => (
             <li key={s} className="text-center">
               <span className={`mx-auto mb-2 block h-1.5 rounded-full ${i <= step ? "bg-accent" : "bg-line"}`} aria-hidden="true" />
-              <span className={`text-xs font-semibold sm:text-sm ${i <= step ? "text-brand" : "text-faint"}`}>{STATUS[s].label}</span>
+              <span className={`block break-words text-[11px] font-semibold leading-tight sm:text-sm ${i <= step ? "text-brand" : "text-faint"}`}>{STATUS[s].label}</span>
             </li>
           ))}
         </ol>
@@ -64,7 +64,7 @@ async function Order({ params }: { params: Params }) {
                   <Price value={i.unitPrice} /> × {i.quantity}
                 </p>
               </div>
-              <p className="text-sm font-semibold">
+              <p className="shrink-0 whitespace-nowrap text-sm font-semibold">
                 <Price value={i.lineTotal} />
               </p>
             </li>

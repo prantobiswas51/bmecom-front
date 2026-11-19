@@ -14,7 +14,7 @@ const links = [
 export function AccountNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Account" className="flex gap-1 overflow-x-auto lg:flex-col">
+    <nav aria-label="Account" className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-col lg:border-0 lg:p-0">
       {links.map((l) => {
         const active = "exact" in l ? path === l.href : path.startsWith(l.href);
         return (
