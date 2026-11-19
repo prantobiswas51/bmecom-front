@@ -15,6 +15,7 @@ import { fetchAddresses } from "../lib/addresses";
 import { getCurrentUser } from "../lib/session";
 import { Icon } from "../components/icons";
 import { CardActions } from "./_components/CardActions";
+import { FilterDrawer } from "./_components/FilterDrawer";
 import { PriceFilter } from "./_components/PriceFilter";
 import { fetchBlogPosts } from "../lib/blog";
 import { BlogMatches } from "./_components/BlogMatches";
@@ -26,6 +27,9 @@ type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
+/** "a,b" from the address as ["a", "b"]. */
+const listOf = (v: string | undefined) => (v ?? "").split(",").filter(Boolean);
+
 /** A /shop URL with the current filters, changed by `patch`. Changing a filter goes back to page 1. */
 function shopHref(current: CatalogQuery, patch: CatalogQuery) {
   const next = { ...current, page: undefined, ...patch };
@@ -35,7 +39,7 @@ function shopHref(current: CatalogQuery, patch: CatalogQuery) {
   return s ? `/shop?${s}` : "/shop";
 }
 
-/** A checkbox-style row; only one option per list can be on, so choosing another swaps it. */
+/** A checkbox-style row. Ticking several in a list shows products from any of them. */
 function Row({ href, on, label, count }: { href: string; on: boolean; label: string; count?: number }) {
   return (
     <Link href={href} aria-current={on ? "true" : undefined} className="group flex items-center gap-3 py-1.5 text-sm">
@@ -63,10 +67,13 @@ function FilterList({
   title: string;
   icon: "layers" | "tag";
   options: FilterOption[];
-  active?: string;
-  hrefFor: (slug: string | undefined) => string;
+  /** The slugs that are ticked; none means "All". */
+  active: string[];
+  /** The address with these slugs ticked. */
+  hrefFor: (slugs: string[]) => string;
 }) {
   if (options.length === 0) return null;
+  const toggled = (slug: string) => hrefFor(active.includes(slug) ? active.filter((s) => s !== slug) : [...active, slug]);
 
   // Sub categories sit under their parent, and only show once that parent (or one of them) is selected.
   const childrenOf = (slug: string) => options.filter((o) => o.parentSlug === slug);
@@ -74,7 +81,7 @@ function FilterList({
     .filter((o) => !o.parentSlug)
     .flatMap((o) => {
       const kids = childrenOf(o.slug);
-      const open = active === o.slug || kids.some((k) => k.slug === active);
+      const open = active.includes(o.slug) || kids.some((k) => active.includes(k.slug));
       return [{ option: o, indent: false }, ...(open ? kids.map((k) => ({ option: k, indent: true })) : [])];
     });
 
@@ -86,11 +93,11 @@ function FilterList({
       </h2>
       <ul>
         <li>
-          <Row href={hrefFor(undefined)} on={!active} label="All" />
+          <Row href={hrefFor([])} on={active.length === 0} label="All" />
         </li>
         {rows.map(({ option: o, indent }) => (
           <li key={o.slug} className={indent ? "ml-6" : undefined}>
-            <Row href={hrefFor(o.slug)} on={active === o.slug} label={o.name} count={o.count} />
+            <Row href={toggled(o.slug)} on={active.includes(o.slug)} label={o.name} count={o.count} />
           </li>
         ))}
       </ul>
@@ -141,7 +148,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="space-y-6 self-start rounded-[var(--radius-card)] border border-line bg-white p-5">
+        <FilterDrawer activeCount={listOf(query.category).length + listOf(query.brand).length + (query.maxPrice ? 1 : 0)}>
           <form action="/shop" role="search" className="flex gap-2">
             {query.category && <input type="hidden" name="category" value={query.category} />}
             {query.brand && <input type="hidden" name="brand" value={query.brand} />}
@@ -163,16 +170,16 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
                 title="Categories"
                 icon="layers"
                 options={filters.categories}
-                active={query.category}
-                hrefFor={(slug) => shopHref(query, { category: slug })}
+                active={listOf(query.category)}
+                hrefFor={(slugs) => shopHref(query, { category: slugs.join(",") || undefined })}
               />
               <div className="border-t border-line pt-5">
                 <FilterList
                   title="Brands"
                   icon="tag"
                   options={filters.brands}
-                  active={query.brand}
-                  hrefFor={(slug) => shopHref(query, { brand: slug })}
+                  active={listOf(query.brand)}
+                  hrefFor={(slugs) => shopHref(query, { brand: slugs.join(",") || undefined })}
                 />
               </div>
               {filters.maxPrice > 0 && (
@@ -188,7 +195,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
               Clear all filters
             </Link>
           )}
-        </aside>
+        </FilterDrawer>
 
         <section>
           {!result ? (
