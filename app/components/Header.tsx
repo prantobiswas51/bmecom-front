@@ -7,6 +7,7 @@ import { getCurrentUser } from "../lib/session";
 import { CartLink } from "./CartLink";
 import { Icon, categoryIcon } from "./icons";
 import { Logo } from "./Logo";
+import { MobileMenu } from "./MobileMenu";
 
 const accountLinkClass =
   "flex items-center gap-2 rounded-[var(--radius-btn)] border border-line px-3 py-2 text-sm sm:px-5 font-semibold text-brand hover:border-brand";
@@ -37,6 +38,12 @@ async function AccountLink() {
       </form>
     </>
   );
+}
+
+/** The phone menu button. Reads cookies to know who is signed in, so it renders at request time. */
+async function PhoneMenu() {
+  const user = await getCurrentUser();
+  return <MobileMenu name={user ? (user.name ?? "there") : null} />;
 }
 
 /** The store's top-level categories, managed in the admin. Fetched at request time. */
@@ -76,8 +83,20 @@ export function Header() {
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
           <CartLink />
-          <Suspense fallback={<LoginLink />}>
-            <AccountLink />
+          {/* Wide screens: the account button. Phones get the three-bar menu instead. */}
+          <div className="hidden items-center gap-1 sm:gap-2 md:flex">
+            <Suspense fallback={<LoginLink />}>
+              <AccountLink />
+            </Suspense>
+          </div>
+          <Suspense
+            fallback={
+              <span className="p-2.5 text-brand md:hidden" aria-hidden="true">
+                <Icon name="menu" />
+              </span>
+            }
+          >
+            <PhoneMenu />
           </Suspense>
         </div>
       </div>

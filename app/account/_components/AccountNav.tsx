@@ -11,10 +11,11 @@ const links = [
   { href: "/account/profile", label: "Profile & security", icon: "shield" },
 ] as const;
 
+/** The account menu down the left side of large screens. On phones the same links are in the header's three-bar menu. */
 export function AccountNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Account" className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-col lg:border-0 lg:p-0">
+    <nav aria-label="Account" className="flex flex-col gap-1">
       {links.map((l) => {
         const active = "exact" in l ? path === l.href : path.startsWith(l.href);
         return (
@@ -22,7 +23,7 @@ export function AccountNav() {
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
-            className={`flex shrink-0 items-center gap-2.5 rounded-[var(--radius-btn)] px-4 py-2.5 text-sm font-semibold transition ${
+            className={`flex items-center gap-2.5 rounded-[var(--radius-btn)] px-4 py-2.5 text-sm font-semibold transition ${
               active ? "bg-brand text-white" : "text-brand hover:bg-soft"
             }`}
           >

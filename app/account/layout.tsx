@@ -11,7 +11,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 py-8 sm:px-6 sm:py-10">
         {/* minmax(0, 1fr) keeps the single phone column from growing to fit the tab strip, which scrolls sideways instead. */}
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-10">
-          <aside className="min-w-0 lg:sticky lg:top-40 lg:self-start">
+          <aside className="hidden min-w-0 lg:sticky lg:top-40 lg:block lg:self-start">
             <Suspense fallback={<div className="h-12" aria-hidden="true" />}>
               <AccountNav />
             </Suspense>
