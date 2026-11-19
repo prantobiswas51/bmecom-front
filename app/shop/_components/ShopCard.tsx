@@ -66,6 +66,11 @@ export function ShopCard({ p, list = "Shop", index, actions }: { p: CatalogCard;
               ) : (
                 <>
                   {p.priceFrom !== p.priceTo && <span className="mr-1 text-xs font-semibold text-muted">From</span>}
+                  {p.compareAt != null && (
+                    <s className="mr-1.5 text-xs font-semibold text-faint">
+                      <Price value={p.compareAt} />
+                    </s>
+                  )}
                   <Price value={p.priceFrom} />
                 </>
               )}

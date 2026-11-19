@@ -19,6 +19,8 @@ export type CatalogCard = {
   inStock: boolean;
   priceFrom: number;
   priceTo: number;
+  /** The normal price of the cheapest option, when that option is on sale. */
+  compareAt: number | null;
 };
 
 export type CatalogPage = {
@@ -98,12 +100,16 @@ export type ProductDetail = {
     sku: string | null;
     attributes: Record<string, string>;
     price: number;
+    /** The normal price this one is marked down from; null when not on sale. */
+    compareAt: number | null;
     inStock: boolean;
     left: number | null;
   }[];
   images: { id: string; url: string; altText: string | null; variantId: string | null }[];
   priceFrom: number;
   priceTo: number;
+  /** The normal price of a single (non-grouped) product on sale; variants carry their own. */
+  compareAt: number | null;
   seoTitle: string | null;
   metaDescription: string | null;
   metaKeywords: string | null;

@@ -33,6 +33,8 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
 
   const variant = grouped ? p.variants.find((v) => sameValue(v.attributes, picked) && sameValue(picked, v.attributes)) : undefined;
   const price = variant?.price ?? p.priceFrom;
+  // The normal price it is marked down from, while the one on show is on sale.
+  const compareAt = variant ? variant.compareAt : p.compareAt;
   const currency = useCurrencyCode();
   const trackItem = (quantity?: number): GtmItem => ({
     item_id: p.id,
@@ -162,6 +164,16 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
         )}
         <p className="mt-4 text-3xl font-extrabold text-brand">
           {p.upcoming && price === 0 ? <span className="text-xl text-muted">Price to be announced</span> : <Price value={price} />}
+          {compareAt != null && (
+            <>
+              <s className="ml-3 text-xl font-semibold text-faint">
+                <Price value={compareAt} />
+              </s>
+              <span className="ml-3 rounded-full bg-accent px-2.5 py-1 align-middle text-xs font-bold uppercase tracking-wide text-white">
+                {Math.round(((compareAt - price) / compareAt) * 100)}% off
+              </span>
+            </>
+          )}
         </p>
         {p.shortDescription && <p className="mt-4 text-muted">{p.shortDescription}</p>}
 
@@ -289,7 +301,8 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
           {p.weight != null && (
             <>
               <dt className="text-faint">Weight</dt>
-              <dd className="text-ink">{p.weight}</dd>
+              {/* Weights are entered in grams in the admin; heavy ones read better in kg. */}
+              <dd className="text-ink">{p.weight >= 1000 ? `${+(p.weight / 1000).toFixed(2)} kg` : `${p.weight} g`}</dd>
             </>
           )}
         </dl>
