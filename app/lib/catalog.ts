@@ -31,7 +31,8 @@ export type CatalogPage = {
 
 /** parentSlug is set on sub categories; a category's count includes its sub categories' products. */
 export type FilterOption = { name: string; slug: string; count: number; parentSlug?: string | null };
-export type CatalogFilters = { categories: FilterOption[]; brands: FilterOption[] };
+/** maxPrice is the dearest "from" price in the shop, the top end of the price slider. */
+export type CatalogFilters = { categories: FilterOption[]; brands: FilterOption[]; maxPrice: number };
 
 export const SORTS = [
   { value: "newest", label: "Newest" },
@@ -44,6 +45,7 @@ export type CatalogQuery = {
   q?: string;
   category?: string;
   brand?: string;
+  maxPrice?: string;
   sort?: string;
   page?: string;
 };

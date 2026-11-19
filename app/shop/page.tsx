@@ -13,7 +13,9 @@ import { TrackEcommerce, TrackSearch } from "../components/Track";
 import { toDefaults } from "../lib/address";
 import { fetchAddresses } from "../lib/addresses";
 import { getCurrentUser } from "../lib/session";
+import { Icon } from "../components/icons";
 import { CardActions } from "./_components/CardActions";
+import { PriceFilter } from "./_components/PriceFilter";
 import { fetchBlogPosts } from "../lib/blog";
 import { BlogMatches } from "./_components/BlogMatches";
 import { cardItem, ShopCard } from "./_components/ShopCard";
@@ -33,18 +35,33 @@ function shopHref(current: CatalogQuery, patch: CatalogQuery) {
   return s ? `/shop?${s}` : "/shop";
 }
 
-const linkClass = (active: boolean) =>
-  `flex items-center justify-between rounded-[var(--radius-btn)] px-3 py-1.5 text-sm transition ${
-    active ? "bg-brand font-bold text-white" : "text-ink hover:bg-brand-soft"
-  }`;
+/** A checkbox-style row; only one option per list can be on, so choosing another swaps it. */
+function Row({ href, on, label, count }: { href: string; on: boolean; label: string; count?: number }) {
+  return (
+    <Link href={href} aria-current={on ? "true" : undefined} className="group flex items-center gap-3 py-1.5 text-sm">
+      <span
+        aria-hidden="true"
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
+          on ? "border-brand bg-brand text-white" : "border-line bg-white group-hover:border-brand"
+        }`}
+      >
+        {on && <Icon name="check" width={14} height={14} strokeWidth={3} />}
+      </span>
+      <span className={`min-w-0 flex-1 truncate ${on ? "font-bold text-brand" : "text-muted group-hover:text-ink"}`}>{label}</span>
+      {count !== undefined && <span className="rounded-full bg-soft px-2 py-0.5 text-[11px] font-semibold text-muted">{count}</span>}
+    </Link>
+  );
+}
 
 function FilterList({
   title,
+  icon,
   options,
   active,
   hrefFor,
 }: {
   title: string;
+  icon: "layers" | "tag";
   options: FilterOption[];
   active?: string;
   hrefFor: (slug: string | undefined) => string;
@@ -63,19 +80,17 @@ function FilterList({
 
   return (
     <div>
-      <h2 className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-faint">{title}</h2>
-      <ul className="space-y-0.5">
+      <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.06em] text-ink">
+        <Icon name={icon} width={16} height={16} className="text-brand" />
+        {title}
+      </h2>
+      <ul>
         <li>
-          <Link href={hrefFor(undefined)} className={linkClass(!active)}>
-            All
-          </Link>
+          <Row href={hrefFor(undefined)} on={!active} label="All" />
         </li>
         {rows.map(({ option: o, indent }) => (
-          <li key={o.slug} className={indent ? "ml-4" : undefined}>
-            <Link href={hrefFor(o.slug)} className={linkClass(active === o.slug)}>
-              <span className="truncate">{o.name}</span>
-              <span className={`ml-2 text-xs ${active === o.slug ? "text-white/80" : "text-faint"}`}>{o.count}</span>
-            </Link>
+          <li key={o.slug} className={indent ? "ml-6" : undefined}>
+            <Row href={hrefFor(o.slug)} on={active === o.slug} label={o.name} count={o.count} />
           </li>
         ))}
       </ul>
@@ -91,6 +106,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
     q: first(sp.q)?.trim() || undefined,
     category: first(sp.category),
     brand: first(sp.brand),
+    maxPrice: Number.isInteger(Number(first(sp.maxPrice))) && Number(first(sp.maxPrice)) > 0 ? first(sp.maxPrice) : undefined,
     sort: SORTS.some((s) => s.value === sortParam) ? sortParam : undefined,
     page: Number.isInteger(pageNumber) && pageNumber > 1 ? String(pageNumber) : undefined,
   };
@@ -103,7 +119,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
     query.q && !query.page ? fetchBlogPosts(1, query.q) : null,
   ]);
   const defaults = toDefaults(addresses[0], user?.name); // pre-fills the quick order form
-  const filtered = !!(query.q || query.category || query.brand);
+  const filtered = !!(query.q || query.category || query.brand || query.maxPrice);
   const sort = query.sort ?? "newest";
   const listName = query.q ? "Search results" : query.category ? `Category: ${query.category}` : query.brand ? `Brand: ${query.brand}` : "Shop";
 
@@ -125,10 +141,11 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="space-y-6">
+        <aside className="space-y-6 self-start rounded-[var(--radius-card)] border border-line bg-white p-5">
           <form action="/shop" role="search" className="flex gap-2">
             {query.category && <input type="hidden" name="category" value={query.category} />}
             {query.brand && <input type="hidden" name="brand" value={query.brand} />}
+            {query.maxPrice && <input type="hidden" name="maxPrice" value={query.maxPrice} />}
             {query.sort && <input type="hidden" name="sort" value={query.sort} />}
             <input
               name="q"
@@ -144,16 +161,26 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
             <>
               <FilterList
                 title="Categories"
+                icon="layers"
                 options={filters.categories}
                 active={query.category}
                 hrefFor={(slug) => shopHref(query, { category: slug })}
               />
-              <FilterList
-                title="Brands"
-                options={filters.brands}
-                active={query.brand}
-                hrefFor={(slug) => shopHref(query, { brand: slug })}
-              />
+              <div className="border-t border-line pt-5">
+                <FilterList
+                  title="Brands"
+                  icon="tag"
+                  options={filters.brands}
+                  active={query.brand}
+                  hrefFor={(slug) => shopHref(query, { brand: slug })}
+                />
+              </div>
+              {filters.maxPrice > 0 && (
+                <div className="border-t border-line pt-5">
+                  {/* Re-mounted when the limit changes from outside (e.g. "Clear all filters"). */}
+                  <PriceFilter key={query.maxPrice ?? "all"} max={filters.maxPrice} value={query.maxPrice ? Number(query.maxPrice) : undefined} baseHref={shopHref(query, { maxPrice: undefined })} />
+                </div>
+              )}
             </>
           )}
           {filtered && (
