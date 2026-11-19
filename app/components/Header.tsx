@@ -66,7 +66,7 @@ export function Header() {
           <input
             type="search"
             name="q"
-            placeholder="Search for art supplies, paints, etc..."
+            placeholder="Search products and blog posts..."
             className="h-11 w-full rounded-full border border-line bg-soft pl-5 pr-14 text-sm outline-none transition focus:border-brand focus:bg-white"
           />
           <button type="submit" aria-label="Search" className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-white hover:bg-brand-hover">

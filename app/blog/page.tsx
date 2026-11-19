@@ -6,16 +6,25 @@ import { imageUrl } from "../lib/catalog";
 
 export const metadata: Metadata = {
   title: "Blog | BongoMaker Store",
-  description: "Ideas, guides and news about art supplies, stationery and craft materials.",
+  description: "Ideas, guides and news about DIY electronics, microcontrollers, 3D printing, SMPS and lights.",
 };
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 async function Posts({ searchParams }: { searchParams: SearchParams }) {
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, q: qParam } = await searchParams;
   const raw = Array.isArray(pageParam) ? pageParam[0] : pageParam;
   const page = Math.max(1, Number(raw) || 1);
-  const data = await fetchBlogPosts(page);
+  const q = (Array.isArray(qParam) ? qParam[0] : qParam)?.trim() || undefined;
+  const data = await fetchBlogPosts(page, q);
+  // Pagination links keep the search.
+  const href = (p: number) => {
+    const qs = new URLSearchParams();
+    if (q) qs.set("q", q);
+    if (p > 1) qs.set("page", String(p));
+    const s = qs.toString();
+    return s ? `/blog?${s}` : "/blog";
+  };
 
   if (!data) {
     return (
@@ -27,7 +36,7 @@ async function Posts({ searchParams }: { searchParams: SearchParams }) {
   if (data.items.length === 0) {
     return (
       <p className="rounded-[var(--radius-card)] border border-line bg-white p-8 text-center text-muted">
-        No posts yet. Please check back soon.
+        {q ? `No posts match "${q}".` : "No posts yet. Please check back soon."}
       </p>
     );
   }
@@ -61,7 +70,7 @@ async function Posts({ searchParams }: { searchParams: SearchParams }) {
       {data.totalPages > 1 && (
         <nav aria-label="Pages" className="mt-10 flex items-center justify-center gap-4 text-sm">
           {data.page > 1 ? (
-            <Link href={data.page === 2 ? "/blog" : `/blog?page=${data.page - 1}`} className="font-semibold text-brand hover:underline">
+            <Link href={href(data.page - 1)} className="font-semibold text-brand hover:underline">
               ← Newer
             </Link>
           ) : (
@@ -71,7 +80,7 @@ async function Posts({ searchParams }: { searchParams: SearchParams }) {
             Page {data.page} of {data.totalPages}
           </span>
           {data.page < data.totalPages ? (
-            <Link href={`/blog?page=${data.page + 1}`} className="font-semibold text-brand hover:underline">
+            <Link href={href(data.page + 1)} className="font-semibold text-brand hover:underline">
               Older →
             </Link>
           ) : (
@@ -83,10 +92,18 @@ async function Posts({ searchParams }: { searchParams: SearchParams }) {
   );
 }
 
+async function Heading({ searchParams }: { searchParams: SearchParams }) {
+  const { q } = await searchParams;
+  const term = (Array.isArray(q) ? q[0] : q)?.trim();
+  return <h1 className="text-[1.75rem] font-bold text-brand sm:text-3xl">{term ? `Blog results for "${term}"` : "Blog"}</h1>;
+}
+
 export default function BlogPage({ searchParams }: { searchParams: SearchParams }) {
   return (
     <>
-      <h1 className="text-[1.75rem] font-bold text-brand sm:text-3xl">Blog</h1>
+      <Suspense fallback={<h1 className="text-[1.75rem] font-bold text-brand sm:text-3xl">Blog</h1>}>
+        <Heading searchParams={searchParams} />
+      </Suspense>
       <div className="mt-1.5 mb-8 h-1 w-20 rounded-full bg-accent" />
       <Suspense fallback={<div className="h-96" aria-hidden="true" />}>
         <Posts searchParams={searchParams} />

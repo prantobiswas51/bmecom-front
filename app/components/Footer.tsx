@@ -30,7 +30,7 @@ export function Footer() {
         <div>
           <Logo onDark className="h-10" />
           <p className="mt-3 max-w-xs text-sm text-white/70">
-            Art supplies, stationery and craft materials, delivered across Bangladesh.
+            DIY electronics, microcontrollers, 3D printing, SMPS, lights and custom products, delivered across Bangladesh.
           </p>
           <ul className="mt-5 space-y-2 text-sm text-white/80">
             <li className="flex items-center gap-2"><Icon name="whatsapp" width={16} height={16} aria-label="WhatsApp" role="img" /> 01761387787</li>

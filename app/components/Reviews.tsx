@@ -9,7 +9,7 @@ export async function Reviews() {
   if (reviews.length === 0) return null;
 
   return (
-    <Section title="Loved by artists" subtitle="What customers say about their purchases">
+    <Section title="Loved by makers" subtitle="What customers say about their purchases">
       <ul className="grid gap-4 md:grid-cols-3">
         {reviews.map((r) => (
           <li key={r.id} className="flex flex-col rounded-[var(--radius-card)] border border-line bg-white p-6">

@@ -28,22 +28,23 @@ const paths = {
   eyeOff: <><path d="M3 3l18 18" /><path d="M10.600 6.100A10 10 0 0 1 12 5c6.500 0 10 7 10 7a17 17 0 0 1-3.200 4M6.600 6.600A17 17 0 0 0 2 12s3.500 7 10 7a9.700 9.700 0 0 0 4-.9" /><path d="M9.900 9.900a3 3 0 0 0 4.200 4.200" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.500-7 8-7s8 3 8 7" /></>,
   pin: <><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z" /><circle cx="12" cy="10" r="2.500" /></>,
-  brush: <><path d="M20 4c-5 1-9 5-10.500 9l1.500 1.500C15 13 19 9 20 4z" /><path d="M9.500 14c-2 0-3.500 1.500-3.500 3.500 0 1-.5 2-2 2.500 3 1 7 .5 8-3" /></>,
-  palette: <><path d="M12 3a9 9 0 1 0 0 18c1.500 0 2-1 1.500-2s-.5-2 1-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10z" /><circle cx="7.500" cy="11" r="1" /><circle cx="10" cy="7.500" r="1" /><circle cx="15" cy="7.500" r="1" /></>,
-  pen: <><path d="m4 20 1-4L16.500 4.500a2 2 0 0 1 3 3L8 19z" /><path d="m14 7 3 3" /></>,
+  chip: <><rect x="7" y="7" width="10" height="10" rx="1.500" /><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4" /></>,
+  bulb: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.500 10.900c.700.600 1 1.200 1 2.100h5c0-.9.300-1.500 1-2.100A6 6 0 0 0 12 3z" /></>,
+  bolt: <path d="M13 3 5 13h6l-1 8 8-10h-6z" />,
+  cube: <><path d="m12 3 8 4.500v9L12 21l-8-4.500v-9z" /><path d="m4 7.500 8 4.500 8-4.500M12 12v9" /></>,
+  wrench: <path d="M14.500 6.500a4 4 0 0 0 5 5L21 13l-2 2-1.500-1.500-8 8a2 2 0 0 1-3-3l8-8L13 9l-2-2z" />,
   paper: <><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v4h4M9 12h7M9 16h7" /></>,
-  canvas: <><rect x="4" y="4" width="16" height="16" rx="1" /><path d="m4 16 5-5 4 4 3-3 4 4" /></>,
   tag: <><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.500" cy="8.500" r="1" /></>,
 };
 
 /** Picks a menu icon for a category from its name; anything unrecognised gets a tag. */
 export function categoryIcon(name: string): IconName {
   const n = name.toLowerCase();
-  if (/brush/.test(n)) return "brush";
-  if (/paint|colou?r|acrylic|ink/.test(n)) return "palette";
-  if (/pen|marker|pencil/.test(n)) return "pen";
-  if (/pad|paper|book|stationery|note/.test(n)) return "paper";
-  if (/canvas|frame|art/.test(n)) return "canvas";
+  if (/micro|controller|esp|arduino|board|chip|sensor|module|electronic/.test(n)) return "chip";
+  if (/light|led|lamp|bulb|rgb/.test(n)) return "bulb";
+  if (/smps|power|supply|battery|charger|adapter/.test(n)) return "bolt";
+  if (/3d|print|filament/.test(n)) return "cube";
+  if (/custom|tool|diy/.test(n)) return "wrench";
   return "tag";
 }
 

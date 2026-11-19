@@ -19,11 +19,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="my-auto max-w-md">
           <h2 className="text-balance text-4xl font-extrabold leading-[1.15]">
-            Everything you need to create
+            Everything you need to build
           </h2>
           <div className="mt-4 h-1 w-14 rounded-full bg-accent" />
           <p className="mt-5 text-white/70">
-            Art supplies, stationery and craft materials, delivered across Bangladesh.
+            DIY electronics, microcontrollers, 3D printing, SMPS, lights and custom products, delivered across Bangladesh.
           </p>
           <ul className="mt-8 space-y-3">
             {perks.map((p) => (
@@ -38,8 +38,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="pointer-events-none absolute -bottom-10 -right-10 grid grid-cols-2 gap-4 opacity-90">
-          <Art kind="palette" tone="sky" className="h-40 w-40 rounded-[2.5rem]" />
-          <Art kind="brush" tone="mint" className="h-40 w-40 rounded-[2.5rem]" />
+          <Art kind="chip" tone="sky" className="h-40 w-40 rounded-[2.5rem]" />
+          <Art kind="supply" tone="mint" className="h-40 w-40 rounded-[2.5rem]" />
         </div>
       </aside>
 

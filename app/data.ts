@@ -1,6 +1,6 @@
 // Static content for the landing page. Products, categories, brands and reviews come from the API.
 
-export type ArtKind = "paint" | "brush" | "pencil" | "notebook" | "marker" | "scissors" | "canvas" | "palette";
+export type ArtKind = "chip" | "bulb" | "printer" | "supply";
 
 export type Tone = "sky" | "mint" | "sun" | "lilac" | "rose" | "peach";
 
@@ -21,22 +21,22 @@ export const navChips = [
 
 export const slides = [
   {
-    eyebrow: "New season",
-    title: "Everything you need to create",
-    body: "Paints, brushes, sketchbooks and more from trusted brands.",
-    cta: "Shop art supplies",
+    eyebrow: "Build something",
+    title: "Everything you need to build",
+    body: "Microcontrollers, DIY electronics, SMPS, lights and more for your next project.",
+    cta: "Shop now",
     href: "/shop",
     tone: "sky" as Tone,
-    kind: "palette" as ArtKind,
+    kind: "chip" as ArtKind,
   },
   {
     eyebrow: "Just landed",
     title: "Fresh stock, every week",
-    body: "See the newest paints, pens, notebooks and craft supplies.",
+    body: "See the newest boards, modules, 3D printing parts and custom products.",
     cta: "See new arrivals",
     href: "/shop?sort=newest",
     tone: "sun" as Tone,
-    kind: "notebook" as ArtKind,
+    kind: "printer" as ArtKind,
   },
   {
     eyebrow: "Easy ordering",
@@ -45,7 +45,7 @@ export const slides = [
     cta: "Start shopping",
     href: "/shop",
     tone: "mint" as Tone,
-    kind: "paint" as ArtKind,
+    kind: "bulb" as ArtKind,
   },
 ];
 

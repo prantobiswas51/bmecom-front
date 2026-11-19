@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Categories } from "./components/Categories";
 import { Footer } from "./components/Footer";
 import { AnnouncementBar } from "./components/AnnouncementBar";
 import { Header } from "./components/Header";
@@ -21,13 +20,10 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <TrustStrip />
-        <Suspense fallback={<Skeleton className="h-80" />}>
-          <Categories />
-        </Suspense>
         <Suspense fallback={<Skeleton className="h-96" />}>
           <NewArrivals />
         </Suspense>
+        <TrustStrip />
         <Suspense fallback={null}>
           <Brands />
         </Suspense>

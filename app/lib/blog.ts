@@ -15,9 +15,11 @@ export type BlogPage = { items: BlogCard[]; page: number; totalPages: number };
 export type BlogPostDetail = BlogCard & { content: string; updatedAt: string };
 
 /** One page of published posts; null when the API can't be reached. */
-export async function fetchBlogPosts(page = 1): Promise<BlogPage | null> {
+export async function fetchBlogPosts(page = 1, q?: string): Promise<BlogPage | null> {
   try {
-    const res = await fetch(`${API_URL}/catalog/blog?page=${page}`, { cache: "no-store" });
+    const params = new URLSearchParams({ page: String(page) });
+    if (q) params.set("q", q);
+    const res = await fetch(`${API_URL}/catalog/blog?${params}`, { cache: "no-store" });
     return res.ok ? ((await res.json()) as BlogPage) : null;
   } catch {
     return null;

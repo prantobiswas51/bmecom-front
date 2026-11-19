@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "BongoMaker",
   description:
-    "Art supplies, stationery and craft materials, delivered fast across Bangladesh.",
+    "DIY electronics, microcontrollers, 3D printing, SMPS, lights and custom products, delivered fast across Bangladesh.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

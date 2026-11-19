@@ -14,6 +14,8 @@ import { toDefaults } from "../lib/address";
 import { fetchAddresses } from "../lib/addresses";
 import { getCurrentUser } from "../lib/session";
 import { CardActions } from "./_components/CardActions";
+import { fetchBlogPosts } from "../lib/blog";
+import { BlogMatches } from "./_components/BlogMatches";
 import { cardItem, ShopCard } from "./_components/ShopCard";
 
 export const metadata: Metadata = { title: "Shop | BongoMaker Store" };
@@ -93,10 +95,12 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
     page: Number.isInteger(pageNumber) && pageNumber > 1 ? String(pageNumber) : undefined,
   };
 
-  const [[result, filters], user, addresses] = await Promise.all([
+  const [[result, filters], user, addresses, blog] = await Promise.all([
     Promise.all([fetchProducts(query), fetchFilters()]),
     getCurrentUser(),
     fetchAddresses(),
+    // A search also looks through the blog; only the first page of posts shows here.
+    query.q && !query.page ? fetchBlogPosts(1, query.q) : null,
   ]);
   const defaults = toDefaults(addresses[0], user?.name); // pre-fills the quick order form
   const filtered = !!(query.q || query.category || query.brand);
@@ -220,6 +224,8 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
                   )}
                 </nav>
               )}
+
+              {query.q && blog && <BlogMatches posts={blog.items.slice(0, 6)} term={query.q} />}
             </>
           )}
         </section>

@@ -1,83 +1,65 @@
 import { tones, type ArtKind, type Tone } from "../data";
 
 /**
- * Simple flat illustrations that stand in for product photos until real media
- * is served from the media folder.
+ * Simple flat illustrations used in the home carousel and the sign-in panel.
  */
 export function Art({ kind, tone, className = "" }: { kind: ArtKind; tone: Tone; className?: string }) {
   const { bg, fg } = tones[tone];
   const dark = "#0e0f51";
   const shapes: Record<ArtKind, React.ReactNode> = {
-    paint: (
+    // A microcontroller board: chip in the middle, pins down both sides.
+    chip: (
       <>
-        <rect x="38" y="46" width="34" height="48" rx="6" fill={fg} />
-        <rect x="42" y="36" width="26" height="12" rx="3" fill={dark} />
-        <rect x="80" y="58" width="30" height="36" rx="6" fill="#fff" />
-        <rect x="84" y="50" width="22" height="10" rx="3" fill={fg} opacity=".6" />
-        <circle cx="55" cy="70" r="7" fill="#fff" opacity=".7" />
+        <rect x="34" y="30" width="72" height="82" rx="6" fill="#fff" />
+        {[42, 54, 66, 78, 90, 102].map((y) => (
+          <g key={y}>
+            <rect x="26" y={y - 3} width="10" height="6" rx="2" fill={dark} />
+            <rect x="104" y={y - 3} width="10" height="6" rx="2" fill={dark} />
+          </g>
+        ))}
+        <rect x="50" y="48" width="40" height="40" rx="4" fill={dark} />
+        <circle cx="58" cy="56" r="3" fill="#fff" opacity=".8" />
+        <rect x="58" y="66" width="24" height="4" rx="2" fill={fg} />
+        <rect x="58" y="75" width="16" height="4" rx="2" fill={fg} opacity=".6" />
+        <rect x="46" y="96" width="20" height="8" rx="2" fill={fg} opacity=".5" />
       </>
     ),
-    brush: (
+    // A light bulb with a glow.
+    bulb: (
       <>
-        <rect x="52" y="30" width="8" height="70" rx="4" fill={dark} transform="rotate(18 56 65)" />
-        <path d="M44 104c4-10 14-12 16-4s-6 14-16 4z" fill={fg} />
-        <rect x="76" y="34" width="8" height="66" rx="4" fill="#fff" transform="rotate(-14 80 67)" />
-        <path d="M86 104c-2-9-12-12-15-5s7 14 15 5z" fill={dark} opacity=".8" />
+        <circle cx="70" cy="62" r="40" fill="#fff" opacity=".35" />
+        <path d="M70 26c-18 0-30 13-30 29 0 11 6 17 11 23 3 4 4 7 4 12h30c0-5 1-8 4-12 5-6 11-12 11-23 0-16-12-29-30-29z" fill="#fff" />
+        <path d="M60 62l10 14 10-14M70 76v14" fill="none" stroke={fg} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="55" y="94" width="30" height="8" rx="3" fill={dark} />
+        <rect x="59" y="104" width="22" height="7" rx="3" fill={dark} opacity=".8" />
       </>
     ),
-    pencil: (
+    // A 3D printer: frame, gantry, nozzle and a part on the bed.
+    printer: (
       <>
-        <g transform="rotate(35 70 70)">
-          <rect x="62" y="22" width="16" height="70" rx="2" fill={fg} />
-          <path d="M62 92h16l-8 18z" fill="#fde7c2" />
-          <path d="M67 104h6l-3 6z" fill={dark} />
-          <rect x="62" y="22" width="16" height="10" rx="2" fill={dark} />
-        </g>
+        <rect x="32" y="28" width="8" height="80" rx="3" fill={dark} />
+        <rect x="100" y="28" width="8" height="80" rx="3" fill={dark} />
+        <rect x="32" y="28" width="76" height="8" rx="3" fill={dark} />
+        <rect x="40" y="52" width="60" height="7" rx="3" fill={fg} />
+        <rect x="62" y="44" width="16" height="16" rx="3" fill="#fff" />
+        <path d="M66 60h8l-4 9z" fill={dark} />
+        <rect x="36" y="100" width="68" height="10" rx="3" fill="#fff" />
+        <rect x="58" y="84" width="24" height="16" rx="2" fill={fg} />
+        <path d="M58 90h24M58 95h24" stroke="#fff" strokeWidth="2" opacity=".6" />
       </>
     ),
-    notebook: (
+    // A switching power supply (SMPS) box with terminals and a fan grille.
+    supply: (
       <>
-        <rect x="42" y="26" width="58" height="84" rx="6" fill="#fff" />
-        <rect x="42" y="26" width="10" height="84" rx="4" fill={fg} />
-        <rect x="60" y="42" width="30" height="5" rx="2.500" fill={dark} opacity=".8" />
-        <rect x="60" y="56" width="26" height="4" rx="2" fill={fg} opacity=".5" />
-        <rect x="60" y="66" width="30" height="4" rx="2" fill={fg} opacity=".5" />
-      </>
-    ),
-    marker: (
-      <>
-        <g transform="rotate(-25 70 70)">
-          <rect x="60" y="24" width="18" height="64" rx="5" fill={fg} />
-          <rect x="60" y="24" width="18" height="12" rx="4" fill={dark} />
-          <path d="M62 88h14l-3 14h-8z" fill="#fff" />
-        </g>
-        <g transform="rotate(12 100 80)">
-          <rect x="92" y="38" width="14" height="52" rx="4" fill="#fff" />
-          <rect x="92" y="38" width="14" height="10" rx="3" fill={fg} />
-        </g>
-      </>
-    ),
-    scissors: (
-      <>
-        <circle cx="52" cy="92" r="12" fill="none" stroke={dark} strokeWidth="6" />
-        <circle cx="88" cy="92" r="12" fill="none" stroke={fg} strokeWidth="6" />
-        <path d="M58 82 86 30M82 82 54 30" stroke="#fff" strokeWidth="7" strokeLinecap="round" />
-      </>
-    ),
-    canvas: (
-      <>
-        <rect x="34" y="34" width="76" height="68" rx="4" fill="#fff" />
-        <path d="M34 90 62 64l18 18 12-10 18 22v8H34z" fill={fg} opacity=".75" />
-        <circle cx="90" cy="54" r="8" fill={dark} opacity=".8" />
-      </>
-    ),
-    palette: (
-      <>
-        <path d="M70 30c-26 0-42 18-42 38 0 18 14 32 32 32 10 0 10-8 6-12-5-6 0-12 8-12h14c12 0 20-8 20-18C108 42 92 30 70 30z" fill="#fff" />
-        <circle cx="52" cy="58" r="7" fill={fg} />
-        <circle cx="72" cy="48" r="7" fill={dark} />
-        <circle cx="94" cy="58" r="7" fill="#f97316" />
-        <circle cx="50" cy="80" r="7" fill="#10b981" />
+        <rect x="26" y="40" width="88" height="60" rx="6" fill="#fff" />
+        <rect x="26" y="40" width="88" height="12" rx="6" fill={fg} />
+        <circle cx="52" cy="76" r="14" fill="none" stroke={dark} strokeWidth="4" />
+        <path d="M52 66v20M42 76h20" stroke={dark} strokeWidth="3" />
+        {[0, 1, 2, 3].map((i) => (
+          <rect key={i} x={78 + i * 8} y="94" width="5" height="10" rx="1" fill={dark} />
+        ))}
+        <path d="M80 62h26M80 72h20M80 82h24" stroke={fg} strokeWidth="4" strokeLinecap="round" opacity=".6" />
+        <path d="M70 22l-8 14h8l-4 12 12-16h-8l4-10z" fill="#f97316" />
       </>
     ),
   };
