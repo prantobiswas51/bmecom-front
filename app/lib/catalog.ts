@@ -15,6 +15,8 @@ export type CatalogCard = {
   grouped: boolean;
   /** Shown but not orderable yet. */
   upcoming: boolean;
+  /** False when every unit is sold. Products that don't track stock are always in stock. */
+  inStock: boolean;
   priceFrom: number;
   priceTo: number;
 };
@@ -81,11 +83,23 @@ export type ProductDetail = {
   weight: number | null;
   /** Shown but not orderable yet. */
   upcoming: boolean;
+  /** False when every unit (of every variant) is sold. */
+  inStock: boolean;
+  /** Units left when only a few remain (single products only; variants carry their own), otherwise null. */
+  left: number | null;
   brand: Ref | null;
   category: Ref | null;
   secondaryCategories: Ref[];
   axes: { name: string; values: string[] }[];
-  variants: { id: string; slug: string; sku: string | null; attributes: Record<string, string>; price: number }[];
+  variants: {
+    id: string;
+    slug: string;
+    sku: string | null;
+    attributes: Record<string, string>;
+    price: number;
+    inStock: boolean;
+    left: number | null;
+  }[];
   images: { id: string; url: string; altText: string | null; variantId: string | null }[];
   priceFrom: number;
   priceTo: number;

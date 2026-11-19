@@ -42,6 +42,10 @@ export function CartView() {
   const available = rows.filter((r) => r.line);
   const gone = rows.filter((r) => !r.line);
   const subtotal = available.reduce((sum, r) => sum + r.line!.unitPrice * r.item.quantity, 0);
+  // Lines asking for more than the shop has. The order would be refused, so say so here and offer the fix.
+  const short = available.filter((r) => r.line!.available !== null && r.item.quantity > r.line!.available);
+  const fixQuantities = () =>
+    short.forEach((r) => (r.line!.available! > 0 ? setQuantity(r.key, r.line!.available!) : removeFromCart(r.key)));
 
   const toItem = (r: (typeof available)[number]): GtmItem => ({
     item_id: r.item.productId,
@@ -66,6 +70,24 @@ export function CartView() {
           </div>
         )}
 
+        {short.length > 0 && (
+          <div role="alert" className="rounded-[var(--radius-btn)] border border-danger/20 bg-red-50 px-4 py-3 text-sm text-danger">
+            <p className="font-semibold">Some items are low on stock.</p>
+            <ul className="mt-1 list-disc pl-5">
+              {short.map((r) => (
+                <li key={r.key}>
+                  {r.line!.name}
+                  {r.line!.variantLabel ? ` (${r.line!.variantLabel})` : ""}:{" "}
+                  {r.line!.available! > 0 ? `only ${r.line!.available} left` : "out of stock"}
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={fixQuantities} className="mt-2 font-semibold underline">
+              Update my cart
+            </button>
+          </div>
+        )}
+
         <ul className={`${panel} divide-y divide-line`}>
           {available.map(({ item, key, line }) => (
             <li key={key} className="flex gap-4 p-4 sm:p-5">
@@ -81,7 +103,7 @@ export function CartView() {
                   <p className="mt-1 text-sm text-muted"><Price value={line!.unitPrice} /> each</p>
                 </div>
                 <div className="flex items-center justify-between gap-5 sm:justify-end">
-                  <QtyStepper value={item.quantity} onChange={(q) => setQuantity(key, q)} label={`Quantity for ${line!.name}`} />
+                  <QtyStepper value={item.quantity} onChange={(q) => setQuantity(key, q)} label={`Quantity for ${line!.name}`} max={Math.max(1, Math.min(99, line!.available ?? 99))} />
                   <p className="w-24 text-right font-bold text-brand"><Price value={line!.unitPrice * item.quantity} /></p>
                   <button
                     type="button"

@@ -96,6 +96,8 @@ export type QuotedLine = {
   sku: string | null;
   image: string | null;
   unitPrice: number;
+  /** Units in stock; null when stock isn't tracked. */
+  available: number | null;
 };
 
 export type Quote =

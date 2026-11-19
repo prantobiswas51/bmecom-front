@@ -60,6 +60,10 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
   };
   // A grouped product can only be bought once a full combination is picked.
   const orderable = !grouped || !!variant;
+  // Stock of what is chosen. `left` is only known when few remain; then it also caps the quantity.
+  const soldOut = (variant ? !variant.inStock : !grouped && !p.inStock) && orderable;
+  const left = variant ? variant.left : grouped ? null : p.left;
+  const qty = Math.min(quantity, left ?? 99);
 
   // The chosen variant's own photos lead, followed by the ones every variant shares.
   const own = p.images.filter((i) => variant && i.variantId === variant.id);
@@ -198,9 +202,11 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
           </div>
         ) : (
         <div className="mt-7">
+          {soldOut && <p className="mb-4 text-sm font-bold text-danger">Out of stock</p>}
+          {!soldOut && left !== null && <p className="mb-4 text-sm font-bold text-accent-dark">Only {left} left in stock</p>}
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-ink">Quantity</span>
-            <QtyStepper value={quantity} onChange={setQuantity} label="Quantity" />
+            <QtyStepper value={qty} onChange={setQuantity} label="Quantity" max={left ?? 99} />
           </div>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <Button
@@ -208,12 +214,12 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
               size="lg"
               icon="cart"
               className="sm:min-w-48"
-              disabled={!orderable}
+              disabled={!orderable || soldOut}
               onClick={() => {
-                if (!orderable) return;
-                addToCart({ productId: p.id, variantId: variant?.id ?? null, quantity });
-                const item = trackItem(quantity);
-                trackEcommerce("add_to_cart", currency, [item], { value: item.price * quantity });
+                if (!orderable || soldOut) return;
+                addToCart({ productId: p.id, variantId: variant?.id ?? null, quantity: qty });
+                const item = trackItem(qty);
+                trackEcommerce("add_to_cart", currency, [item], { value: item.price * qty });
                 setAdded(true);
               }}
             >
@@ -223,16 +229,16 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
               variant="accent"
               size="lg"
               className="sm:min-w-48"
-              disabled={!orderable}
+              disabled={!orderable || soldOut}
               onClick={() => setBuying(true)}
             >
               Buy now
             </Button>
           </div>
           {grouped && !variant && <p className="mt-2 text-xs text-muted">Choose every option to continue.</p>}
-          {buying && orderable && (
+          {buying && orderable && !soldOut && (
             <BuyNowModal
-              item={{ productId: p.id, variantId: variant?.id ?? null, quantity }}
+              item={{ productId: p.id, variantId: variant?.id ?? null, quantity: qty }}
               variantLabel={variant ? Object.values(variant.attributes).join(" / ") : null}
               defaults={defaults}
               onClose={() => setBuying(false)}

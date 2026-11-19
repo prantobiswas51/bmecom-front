@@ -39,6 +39,10 @@ export function ShopCard({ p, list = "Shop", index }: { p: CatalogCard; list?: s
             <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">
               Upcoming
             </span>
+          ) : !p.inStock ? (
+            <span className="absolute left-3 top-3 rounded-full bg-ink px-2.5 py-0.5 text-xs font-bold text-white">
+              Sold out
+            </span>
           ) : (
             p.grouped && (
               <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-0.5 text-xs font-bold text-white">
