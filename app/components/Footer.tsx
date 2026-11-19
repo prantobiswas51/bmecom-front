@@ -26,8 +26,9 @@ const columns = [
 export function Footer() {
   return (
     <footer className="mt-8 bg-brand text-white">
-      <div className="mx-auto grid w-full max-w-[1440px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(2,1fr)]">
-        <div>
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(2,1fr)] md:gap-10">
+        {/* On phones the brand block spans the row and the two link lists sit side by side below it. */}
+        <div className="col-span-2 md:col-span-1">
           <Logo onDark className="h-10" />
           <p className="mt-3 max-w-xs text-sm text-white/70">
             DIY electronics, microcontrollers, 3D printing, SMPS, lights and custom products, delivered across Bangladesh.

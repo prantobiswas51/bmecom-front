@@ -17,6 +17,7 @@ import { Icon } from "../components/icons";
 import { CardActions } from "./_components/CardActions";
 import { FilterButton, FilterPanel, FilterProvider } from "./_components/FilterDrawer";
 import { PriceFilter } from "./_components/PriceFilter";
+import { SortMenu } from "./_components/SortMenu";
 import { fetchBlogPosts } from "../lib/blog";
 import { BlogMatches } from "./_components/BlogMatches";
 import { cardItem, ShopCard } from "./_components/ShopCard";
@@ -147,8 +148,17 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
           </h1>
           <div className="mt-1.5 h-1 w-24 rounded-full bg-accent" />
         </div>
-        {/* Phones: the button that opens the filter drawer sits on the title's row. */}
-        <FilterButton activeCount={listOf(query.category).length + listOf(query.brand).length + (query.maxPrice ? 1 : 0)} />
+        {/* Phones: Sort and Filters buttons sit on the title's row. */}
+        <div className="flex items-center gap-2">
+          <SortMenu
+            options={SORTS.map((s) => ({
+              label: s.label,
+              href: shopHref(query, { sort: s.value === "newest" ? undefined : s.value }),
+              active: sort === s.value,
+            }))}
+          />
+          <FilterButton activeCount={listOf(query.category).length + listOf(query.brand).length + (query.maxPrice ? 1 : 0)} />
+        </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -212,7 +222,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
                 <p className="text-sm text-muted">
                   {result.total} product{result.total === 1 ? "" : "s"}
                 </p>
-                <nav aria-label="Sort" className="flex flex-wrap items-center gap-1.5 text-sm">
+                <nav aria-label="Sort" className="hidden flex-wrap items-center gap-1.5 text-sm lg:flex">
                   <span className="text-faint">Sort:</span>
                   {SORTS.map((s) => (
                     <Link
