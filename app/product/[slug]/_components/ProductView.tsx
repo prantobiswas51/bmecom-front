@@ -149,12 +149,16 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
         )}
         <h1 className="mt-1 text-[1.5rem] font-bold leading-tight text-brand sm:text-[2rem]">{p.name}</h1>
         <div className="mt-2 h-1 w-16 rounded-full bg-accent" />
-        {rating}
-
-        {p.upcoming && (
-          <span className="mt-4 inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-            Upcoming
-          </span>
+        {/* The rating and the Upcoming badge share a row, with a gap between them (they wrap on very narrow screens). */}
+        {(rating || p.upcoming) && (
+          <div className="flex flex-wrap items-center gap-x-4">
+            {rating}
+            {p.upcoming && (
+              <span className="mt-3 inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                Upcoming
+              </span>
+            )}
+          </div>
         )}
         <p className="mt-4 text-3xl font-extrabold text-brand">
           {p.upcoming && price === 0 ? <span className="text-xl text-muted">Price to be announced</span> : <Price value={price} />}

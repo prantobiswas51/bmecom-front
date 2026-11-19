@@ -9,6 +9,7 @@ import { fetchAddresses } from "../../lib/addresses";
 import { getCurrentUser } from "../../lib/session";
 import { CardActions } from "../../shop/_components/CardActions";
 import { ShopCard } from "../../shop/_components/ShopCard";
+import { Collapsible } from "./_components/Collapsible";
 import { ProductView } from "./_components/ProductView";
 import { RatingLink, Reviews } from "./_components/Reviews";
 
@@ -95,19 +96,20 @@ async function Product({ params, searchParams }: { params: Params; searchParams:
         defaults={defaults}
       />
 
-      {product.description && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="text-[1.375rem] font-bold text-brand sm:text-2xl">Description</h2>
-          <div className="mt-1.5 h-1 w-20 rounded-full bg-accent" />
-          {/* The backend strips the HTML down to a safe set of tags when the product is saved. */}
-          <div
-            className={`product-description mt-5 leading-relaxed text-ink ${/<\/?[a-z][\s\S]*>/i.test(product.description) ? "" : "whitespace-pre-line"}`}
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
-        </section>
-      )}
+      {/* Description and reviews sit side by side on large screens, each one can be folded away. */}
+      <div className={`mt-14 grid items-start gap-10 ${product.description && reviews ? "lg:grid-cols-2" : "max-w-3xl"}`}>
+        {product.description && (
+          <Collapsible title="Description">
+            {/* The backend strips the HTML down to a safe set of tags when the product is saved. */}
+            <div
+              className={`product-description mt-5 leading-relaxed text-ink ${/<\/?[a-z][\s\S]*>/i.test(product.description) ? "" : "whitespace-pre-line"}`}
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
+          </Collapsible>
+        )}
 
-      {reviews && <Reviews slug={product.slug} data={reviews} searchPath={`/product/${product.slug}?reviews=`} />}
+        {reviews && <Reviews slug={product.slug} data={reviews} searchPath={`/product/${product.slug}?reviews=`} />}
+      </div>
 
       {product.category && (
         <Suspense fallback={null}>

@@ -4,6 +4,7 @@ import { Stars } from "../../../components/Stars";
 import { api } from "../../../lib/api";
 import type { ReviewPage } from "../../../lib/reviews";
 import { getAccessToken, getCurrentUser } from "../../../lib/session";
+import { Collapsible } from "./Collapsible";
 import { ReviewForm } from "./ReviewForm";
 
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -60,11 +61,8 @@ export function Reviews({
   const { summary, items, page, totalPages } = data;
 
   return (
-    <section id="reviews" className="mt-14 scroll-mt-40">
-      <h2 className="text-[1.375rem] font-bold text-brand sm:text-2xl">Customer reviews</h2>
-      <div className="mt-1.5 h-1 w-20 rounded-full bg-accent" />
-
-      <div className="mt-6 grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <Collapsible id="reviews" title="Customer reviews">
+      <div className="mt-6 space-y-8">
         <div className="space-y-6">
           <div className="rounded-[var(--radius-card)] border border-line bg-white p-5">
             {summary.count > 0 ? (
@@ -146,6 +144,6 @@ export function Reviews({
           )}
         </div>
       </div>
-    </section>
+    </Collapsible>
   );
 }
