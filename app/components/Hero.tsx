@@ -31,18 +31,30 @@ export function Hero() {
         className="relative grid overflow-hidden rounded-[1.75rem] transition-colors duration-500 md:grid-cols-2"
         style={{ backgroundColor: tones[s.tone].bg }}
       >
-        <div className="relative z-10 flex flex-col justify-center gap-4 p-7 sm:p-12 lg:p-16" aria-live="polite">
-          <span className="w-fit rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-accent-dark">
-            {s.eyebrow}
-          </span>
-          <h1 className="text-balance text-3xl font-extrabold leading-[1.15] text-brand sm:text-4xl lg:text-[2.75rem]">
-            {s.title}
-          </h1>
-          <p className="max-w-md text-muted">{s.body}</p>
-          <div className="mt-2 h-1 w-14 rounded-full bg-accent" />
-          <Button href={s.href} icon="cart" className="mt-2 w-fit">
-            {s.cta}
-          </Button>
+        {/* Every slide's text sits in the same grid cell, so the box is as tall as the longest one and never resizes between slides. */}
+        <div className="relative z-10 grid p-7 pb-16 sm:p-12 sm:pb-16 lg:p-16 lg:pb-20" aria-live="polite">
+          {slides.map((slide, n) => (
+            <div
+              key={slide.title}
+              aria-hidden={n !== i}
+              inert={n !== i}
+              className={`col-start-1 row-start-1 flex flex-col justify-center gap-4 transition-opacity duration-500 ${n === i ? "opacity-100" : "pointer-events-none opacity-0"}`}
+            >
+              <span className="w-fit rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-accent-dark">
+                {slide.eyebrow}
+              </span>
+              {n === 0 ? (
+                <h1 className="text-balance text-3xl font-extrabold leading-[1.15] text-brand sm:text-4xl lg:text-[2.75rem]">{slide.title}</h1>
+              ) : (
+                <p className="text-balance text-3xl font-extrabold leading-[1.15] text-brand sm:text-4xl lg:text-[2.75rem]">{slide.title}</p>
+              )}
+              <p className="max-w-md text-muted">{slide.body}</p>
+              <div className="mt-2 h-1 w-14 rounded-full bg-accent" />
+              <Button href={slide.href} icon="cart" className="mt-2 w-fit">
+                {slide.cta}
+              </Button>
+            </div>
+          ))}
         </div>
 
         <div className="relative hidden min-h-[320px] md:block">

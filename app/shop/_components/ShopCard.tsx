@@ -57,17 +57,20 @@ export function ShopCard({ p, list = "Shop", index, actions }: { p: CatalogCard;
             <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-faint">{p.category.name}</p>
           )}
           <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold text-ink group-hover:text-accent-dark">{p.name}</h3>
-          {p.brand && <p className="mt-0.5 text-xs text-muted">{p.brand.name}</p>}
-          <p className="mt-2 text-base font-extrabold text-brand">
-            {p.upcoming && p.priceFrom === 0 ? (
-              <span className="text-sm font-semibold text-muted">Coming soon</span>
-            ) : (
-              <>
-                {p.priceFrom !== p.priceTo && <span className="mr-1 text-xs font-semibold text-muted">From</span>}
-                <Price value={p.priceFrom} />
-              </>
-            )}
-          </p>
+          {/* Brand on the left, price on the right, to save a row. */}
+          <div className="mt-1.5 flex items-baseline justify-between gap-2">
+            <p className="min-w-0 truncate text-xs text-muted">{p.brand?.name}</p>
+            <p className="shrink-0 whitespace-nowrap text-base font-extrabold text-brand">
+              {p.upcoming && p.priceFrom === 0 ? (
+                <span className="text-sm font-semibold text-muted">Coming soon</span>
+              ) : (
+                <>
+                  {p.priceFrom !== p.priceTo && <span className="mr-1 text-xs font-semibold text-muted">From</span>}
+                  <Price value={p.priceFrom} />
+                </>
+              )}
+            </p>
+          </div>
         </div>
       </ProductLink>
       {/* Outside the link, so pressing a button never opens the product page. */}
