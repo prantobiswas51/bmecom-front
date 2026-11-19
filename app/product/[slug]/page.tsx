@@ -7,6 +7,7 @@ import { fetchReviews } from "../../lib/reviews";
 import { toDefaults } from "../../lib/address";
 import { fetchAddresses } from "../../lib/addresses";
 import { getCurrentUser } from "../../lib/session";
+import { CardActions } from "../../shop/_components/CardActions";
 import { ShopCard } from "../../shop/_components/ShopCard";
 import { ProductView } from "./_components/ProductView";
 import { RatingLink, Reviews } from "./_components/Reviews";
@@ -29,9 +30,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 async function Related({ categorySlug, exceptId }: { categorySlug: string; exceptId: string }) {
-  const result = await fetchProducts({ category: categorySlug }, 5);
+  const [result, user, addresses] = await Promise.all([fetchProducts({ category: categorySlug }, 5), getCurrentUser(), fetchAddresses()]);
   const items = result?.items.filter((p) => p.id !== exceptId).slice(0, 4) ?? [];
   if (items.length === 0) return null;
+  const defaults = toDefaults(addresses[0], user?.name);
   return (
     <section className="mt-14">
       <h2 className="text-[1.375rem] font-bold text-brand sm:text-2xl">You may also like</h2>
@@ -39,7 +41,7 @@ async function Related({ categorySlug, exceptId }: { categorySlug: string; excep
       <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-4">
         {items.map((p, i) => (
           <li key={p.id}>
-            <ShopCard p={p} list="Related products" index={i} />
+            <ShopCard p={p} list="Related products" index={i} actions={<CardActions p={p} defaults={defaults} />} />
           </li>
         ))}
       </ul>
