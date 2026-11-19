@@ -10,6 +10,10 @@ import {
   type FilterOption,
 } from "../lib/catalog";
 import { TrackEcommerce, TrackSearch } from "../components/Track";
+import { toDefaults } from "../lib/address";
+import { fetchAddresses } from "../lib/addresses";
+import { getCurrentUser } from "../lib/session";
+import { CardActions } from "./_components/CardActions";
 import { cardItem, ShopCard } from "./_components/ShopCard";
 
 export const metadata: Metadata = { title: "Shop | BongoMaker Store" };
@@ -89,7 +93,12 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
     page: Number.isInteger(pageNumber) && pageNumber > 1 ? String(pageNumber) : undefined,
   };
 
-  const [result, filters] = await Promise.all([fetchProducts(query), fetchFilters()]);
+  const [[result, filters], user, addresses] = await Promise.all([
+    Promise.all([fetchProducts(query), fetchFilters()]),
+    getCurrentUser(),
+    fetchAddresses(),
+  ]);
+  const defaults = toDefaults(addresses[0], user?.name); // pre-fills the quick order form
   const filtered = !!(query.q || query.category || query.brand);
   const sort = query.sort ?? "newest";
   const listName = query.q ? "Search results" : query.category ? `Category: ${query.category}` : query.brand ? `Brand: ${query.brand}` : "Shop";
@@ -187,7 +196,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
                   {result.items.map((p, i) => (
                     <li key={p.id} className="flex">
                       <div className="flex-1">
-                        <ShopCard p={p} list={listName} index={i} />
+                        <ShopCard p={p} list={listName} index={i} actions={<CardActions p={p} defaults={defaults} />} />
                       </div>
                     </li>
                   ))}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ProductLink } from "../../components/Track";
 import { Price } from "../../components/Price";
 import { imageUrl, type CatalogCard } from "../../lib/catalog";
@@ -14,7 +15,7 @@ export const cardItem = (p: CatalogCard, index?: number): GtmItem => ({
 });
 
 /** A product tile. `list` and `index` say where it is shown, for click tracking. */
-export function ShopCard({ p, list = "Shop", index }: { p: CatalogCard; list?: string; index?: number }) {
+export function ShopCard({ p, list = "Shop", index, actions }: { p: CatalogCard; list?: string; index?: number; actions?: ReactNode }) {
   return (
     <article className="group flex flex-col">
       <ProductLink
@@ -69,6 +70,8 @@ export function ShopCard({ p, list = "Shop", index }: { p: CatalogCard; list?: s
           </p>
         </div>
       </ProductLink>
+      {/* Outside the link, so pressing a button never opens the product page. */}
+      {actions}
     </article>
   );
 }

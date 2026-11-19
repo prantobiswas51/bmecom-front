@@ -89,7 +89,6 @@ export type ProductDetail = {
   left: number | null;
   brand: Ref | null;
   category: Ref | null;
-  secondaryCategories: Ref[];
   axes: { name: string; values: string[] }[];
   variants: {
     id: string;

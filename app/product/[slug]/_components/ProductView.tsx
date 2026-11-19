@@ -274,13 +274,11 @@ export function ProductView({ product: p, initialVariant, rating, defaults }: { 
           )}
           {p.category && (
             <>
-              <dt className="text-faint">Categories</dt>
-              <dd className="flex flex-wrap gap-1.5">
-                {[p.category, ...p.secondaryCategories].map((c) => (
-                  <Link key={c.slug} href={`/shop?category=${c.slug}`} className={chip}>
-                    {c.name}
-                  </Link>
-                ))}
+              <dt className="text-faint">Category</dt>
+              <dd>
+                <Link href={`/shop?category=${p.category.slug}`} className={chip}>
+                  {p.category.name}
+                </Link>
               </dd>
             </>
           )}
