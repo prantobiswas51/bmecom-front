@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Icon } from "../../components/icons";
 
 /**
- * The shop's filter panel. On large screens it is a card beside the products; on phones it is hidden
- * behind a "Filters" button and slides in from the left.
+ * The shop's filters. On large screens they are a card beside the products; on phones they are hidden
+ * behind a "Filters" button and slide in from the left. The button and the panel are separate pieces
+ * (so the button can sit next to the page title) that share this open/closed state.
  */
-export function FilterDrawer({ activeCount, children }: { activeCount: number; children: ReactNode }) {
+const Open = createContext<[boolean, (open: boolean) => void]>([false, () => {}]);
+
+export function FilterProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   // Escape closes it, and the page behind does not scroll while it is open.
@@ -23,20 +26,31 @@ export function FilterDrawer({ activeCount, children }: { activeCount: number; c
     };
   }, [open]);
 
+  return <Open.Provider value={[open, setOpen]}>{children}</Open.Provider>;
+}
+
+/** Phones only. Shows how many filters are on. */
+export function FilterButton({ activeCount }: { activeCount: number }) {
+  const [open, setOpen] = useContext(Open);
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      className="flex shrink-0 items-center gap-2 rounded-[var(--radius-btn)] border border-line bg-white px-4 py-2 text-sm font-semibold text-brand hover:border-brand lg:hidden"
+    >
+      <Icon name="layers" width={16} height={16} />
+      Filters
+      {activeCount > 0 && <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold text-white">{activeCount}</span>}
+    </button>
+  );
+}
+
+export function FilterPanel({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useContext(Open);
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className="flex w-fit items-center gap-2 rounded-[var(--radius-btn)] border border-line bg-white px-4 py-2 text-sm font-semibold text-brand hover:border-brand lg:hidden"
-      >
-        <Icon name="layers" width={16} height={16} />
-        Filters
-        {activeCount > 0 && <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold text-white">{activeCount}</span>}
-      </button>
-
       {/* Dimmed page behind the drawer; tapping it closes the drawer. */}
       <div
         aria-hidden="true"

@@ -15,7 +15,7 @@ import { fetchAddresses } from "../lib/addresses";
 import { getCurrentUser } from "../lib/session";
 import { Icon } from "../components/icons";
 import { CardActions } from "./_components/CardActions";
-import { FilterDrawer } from "./_components/FilterDrawer";
+import { FilterButton, FilterPanel, FilterProvider } from "./_components/FilterDrawer";
 import { PriceFilter } from "./_components/PriceFilter";
 import { fetchBlogPosts } from "../lib/blog";
 import { BlogMatches } from "./_components/BlogMatches";
@@ -131,7 +131,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
   const listName = query.q ? "Search results" : query.category ? `Category: ${query.category}` : query.brand ? `Brand: ${query.brand}` : "Shop";
 
   return (
-    <>
+    <FilterProvider>
       {result && result.items.length > 0 && (
         <TrackEcommerce
           event="view_item_list"
@@ -140,15 +140,19 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
         />
       )}
       {query.q && result && <TrackSearch term={query.q} results={result.total} />}
-      <div className="mb-6">
-        <h1 className="text-[1.375rem] font-bold text-brand sm:text-[2rem] sm:leading-tight">
-          {query.q ? `Results for "${query.q}"` : "Shop"}
-        </h1>
-        <div className="mt-1.5 h-1 w-24 rounded-full bg-accent" />
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[1.375rem] font-bold text-brand sm:text-[2rem] sm:leading-tight">
+            {query.q ? `Results for "${query.q}"` : "Shop"}
+          </h1>
+          <div className="mt-1.5 h-1 w-24 rounded-full bg-accent" />
+        </div>
+        {/* Phones: the button that opens the filter drawer sits on the title's row. */}
+        <FilterButton activeCount={listOf(query.category).length + listOf(query.brand).length + (query.maxPrice ? 1 : 0)} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <FilterDrawer activeCount={listOf(query.category).length + listOf(query.brand).length + (query.maxPrice ? 1 : 0)}>
+        <FilterPanel>
           <form action="/shop" role="search" className="flex gap-2">
             {query.category && <input type="hidden" name="category" value={query.category} />}
             {query.brand && <input type="hidden" name="brand" value={query.brand} />}
@@ -195,7 +199,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
               Clear all filters
             </Link>
           )}
-        </FilterDrawer>
+        </FilterPanel>
 
         <section>
           {!result ? (
@@ -264,7 +268,7 @@ async function Shop({ searchParams }: { searchParams: SearchParams }) {
           )}
         </section>
       </div>
-    </>
+    </FilterProvider>
   );
 }
 
